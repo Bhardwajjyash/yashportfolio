@@ -74,9 +74,8 @@
     background: #020202;
     border: 6px solid #111;
     border-radius: 16px 16px 0 0;
-    transform: translateZ(2px);
+    transform: translateZ(2px); /* Pushed slightly forward */
     overflow: hidden;
-    backface-visibility: hidden;
     box-shadow: inset 0 0 0 1px #333, inset 0 0 20px rgba(0,0,0,0.8);
   }
 
@@ -85,8 +84,7 @@
     inset: 0;
     background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%);
     border-radius: 16px 16px 0 0;
-    transform: translateZ(-2px) rotateY(180deg);
-    backface-visibility: hidden;
+    transform: translateZ(-2px); /* Pushed slightly backward, NO rotateY */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,46 +95,15 @@
     width: 70px;
     height: 70px;
     color: #ffffff;
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
-    transition: filter 0.5s ease;
+    fill: #ffffff;
+    transform: scaleX(-1); /* Flips the logo so it reads correctly from the outside */
+    display: block; 
   }
 
-  .mac-base {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, #9ca3af, #4b5563);
-    transform-origin: bottom center;
-    transform: rotateX(90deg) translateY(100%);
-    border-radius: 0 0 16px 16px;
-    transform-style: preserve-3d;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 8%;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.9);
-    z-index: 1;
-  }
 
-  .mac-keyboard {
-    width: 86%;
-    height: 48%;
-    background: #1a1a1a;
-    border-radius: 6px;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
-    position: relative;
-  }
+
   
-  .mac-trackpad {
-    width: 35%;
-    height: 28%;
-    background: rgba(255,255,255,0.1);
-    margin-top: 4%;
-    border-radius: 6px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-  }
+
 
   .mac-lip {
     position: absolute;
@@ -274,4 +241,56 @@
 
 @media (pointer: fine) {
   * { cursor: none !important; }
+}
+.mac-base {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Realistic brushed metal gradient */
+  background: linear-gradient(to bottom, #b4b8c0 0%, #8c919a 100%);
+  transform-origin: bottom center;
+  transform: rotateX(90deg) translateY(100%);
+  border-radius: 0 0 16px 16px;
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 7%;
+  /* Added white rim light to the edge for metallic feel */
+  box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 1px 3px rgba(255,255,255,0.7);
+  z-index: 1;
+}
+
+.mac-keyboard {
+  width: 84%;
+  height: 48%;
+  /* The glowing cyan backlight */
+  background-color: rgba(0, 240, 255, 0.4); 
+  border-radius: 6px;
+  
+  /* This creates the grid of physical keys */
+  background-image: 
+    linear-gradient(to right, #151515 92%, transparent 92%),
+    linear-gradient(to bottom, #151515 88%, transparent 88%);
+  background-size: 3.57% 16.66%; /* Key dimensions */
+  background-position: 1px 1px;
+  
+  /* Keyboard recess shadow & outer backlight glow */
+  box-shadow: inset 0 3px 10px rgba(0,0,0,0.9), 0 0 15px rgba(0, 240, 255, 0.3);
+  border: 2px solid #0a0a0a;
+  position: relative;
+}
+
+.mac-trackpad {
+  width: 32%;
+  height: 32%;
+  /* Metallic trackpad color */
+  background: linear-gradient(135deg, #a3a8b2 0%, #878c96 100%);
+  margin-top: 4%;
+  border-radius: 8px;
+  border: 1px solid #777;
+  /* Recessed physical shadow */
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(255,255,255,0.5);
 }

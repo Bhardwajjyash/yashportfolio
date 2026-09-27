@@ -28,7 +28,7 @@ const PROJECTS_DATA = [
     title: 'BhejaFry', 
     subtitle: 'TRIVIA.ENGINE', 
     description: 'Real-time multiplayer trivia application. Engineered with robust WebSockets for live leaderboards and zero-latency state synchronization across distributed clients.', 
-    tech: ['React.js', 'Socket.io', 'PostgreSQL', 'Prisma', 'Redis', 'Docker'], 
+    tech: ['React.js', 'Node.js', 'Socket.io', 'PostgreSQL', 'Prisma', 'Redis', 'Docker'], 
     link: 'https://bhejafry.fun',
     metrics: { deployment: 'Docker/MinIO', latency: '<50ms', db: 'PostgreSQL' }
   },
@@ -36,9 +36,9 @@ const PROJECTS_DATA = [
     id: '02', 
     title: 'Yash.Album', 
     subtitle: 'MEDIA.MATRIX', 
-    description: 'A dark-themed social media matrix specifically engineered for photographers. Features heavy image processing via Cloudinary and complex global state managed by Redux Toolkit.', 
-    tech: ['Next.js', 'Tailwind', 'MongoDB', 'Express', 'Redux'], 
-    link: 'https://github.com/bhardwajjyash',
+    description: 'A dark-themed social media matrix specifically engineered for photographers. Features heavy image processing via Cloudinary and Sharp, with complex global state managed by Redux Toolkit.', 
+    tech: ['React', 'Node.js', 'Express', 'MongoDB', 'Redux', 'Tailwind'], 
+    link: 'https://yash-album.onrender.com/',
     metrics: { state: 'Redux Toolkit', cdn: 'Cloudinary', stack: 'MERN' }
   },
   { 
@@ -56,27 +56,19 @@ const PROJECTS_DATA = [
     subtitle: 'NEURAL.NET', 
     description: 'Convolutional Neural Network built from scratch to classify plant diseases from leaf imagery, served via a Streamlit interface.', 
     tech: ['TensorFlow', 'Keras', 'OpenCV', 'Streamlit'], 
-    link: 'https://github.com/bhardwajjyash',
+    link: 'https://plant-disease-recognition-by-bhardwajjyash.streamlit.app/',
     metrics: { architecture: 'CNN', serving: 'Streamlit', accuracy: 'High' }
   },
   { 
     id: '05', 
     title: 'SAMS Portal', 
     subtitle: 'SYS.ARCHITECTURE', 
-    description: 'Student Achievement Management System engineered for the BPIT IT department. A structural digitization of academic tracking with secure role-based access.', 
-    tech: ['React', 'Node.js', 'Express', 'MongoDB'], 
+    description: 'Student Achievement Management System engineered for the Bhagwan Parshuram Institute of Technology. A structural digitization of academic tracking with secure navigation layouts.', 
+    tech: ['Next.js', 'MySQL', 'Prisma ORM', 'cloudinary'], 
     link: 'https://github.com/bhardwajjyash',
     metrics: { client: 'BPIT Dept', auth: 'Role-Based', type: 'Full-Stack' }
   },
-  { 
-    id: '06', 
-    title: 'Produtrix', 
-    subtitle: 'DATA.ANALYTICS', 
-    description: 'Data-driven productivity suite bridging study session tracking with deep calendar analytics via seamless Google OAuth2 integration and Prisma ORM schemas.', 
-    tech: ['Express', 'Prisma', 'OAuth2', 'React'], 
-    link: 'https://github.com/bhardwajjyash',
-    metrics: { auth: 'Google OAuth2', orm: 'Prisma', sync: 'Real-time' }
-  },
+
 ]
 
 const SKILLS_MATRIX = [
@@ -270,7 +262,8 @@ export default function Home() {
   const macAssemblyRef = useRef(null)
   const macLidRef = useRef(null)
   const projectRefs = useRef([])
-  
+  const dragRef = useRef({ isDragging: false, startX: 0, startY: 0, rotX: 5, rotY: 0 })
+  const resetButtonRef = useRef(null)
   const [activeProject, setActiveProject] = useState(null)
   const [modalMounted, setModalMounted] = useState(false) 
   const [isBooting, setIsBooting] = useState(false)
@@ -305,36 +298,120 @@ export default function Home() {
     gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: 'elastic.out(1, 0.4)' })
   }, [])
 
-  const openProject = useCallback((project) => {
-    document.body.style.overflow = 'hidden'
-    setShowIframe(false)
-    setIsBooting(true)
-    setActiveProject(project)
-    setModalMounted(true)
-  }, [])
+// Locate your openProject function (around line 290) and update it:
+const openProject = useCallback((project) => {
+  document.body.style.overflow = 'hidden'
+  if (window.lenis) window.lenis.stop() 
+  
+  setShowIframe(false)
+  setActiveProject(project)
+  setModalMounted(true)
+  // Note: You can now safely delete the `const [isBooting, setIsBooting] = useState(false)` from your component, we don't need it!
+}, [])
 
-  const closeProject = useCallback(() => {
-    setShowIframe(false)
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setActiveProject(null)
-        setModalMounted(false)
-        document.body.style.overflow = ''
-      }
-    })
+// Find your existing modalMounted useEffect and replace it with this:
+useEffect(() => {
+  if (modalMounted && macAssemblyRef.current && macLidRef.current) {
+    const tl = gsap.timeline()
     
-    tl.to('.modal-data-reveal', { y: 20, opacity: 0, duration: 0.4, stagger: 0.05, ease: 'power2.in' })
-    tl.to(macLidRef.current, { rotationX: -90, duration: 0.8, ease: 'power3.inOut' }, "-=0.2")
-    tl.to(macAssemblyRef.current, { z: -4000, rotationY: 720, scale: 0.1, opacity: 0, duration: 1.5, ease: 'expo.inOut' }, "-=0.4")
-    tl.to(modalRef.current, { opacity: 0, backdropFilter: 'blur(0px)', pointerEvents: 'none', duration: 0.6 }, "-=0.8")
-  }, [])
+    // Setup Initial State
+    gsap.set(macLidRef.current, { rotationX: -90 })
+    gsap.set('#boot-loader', { width: '0%' })
+    
+    // Step 1: Fade in Modal & Fly in Laptop
+    tl.fromTo(modalRef.current, { opacity: 0, backdropFilter: 'blur(0px)' }, { opacity: 1, backdropFilter: 'blur(40px)', duration: 0.6, ease: 'power2.inOut' })
+    tl.fromTo(macAssemblyRef.current, { z: -5000, rotationY: -1080, rotationX: 15, rotationZ: -10, scale: 0.05, opacity: 0 }, { z: 0, rotationY: 0, rotationX: 5, rotationZ: 0, scale: 1, opacity: 1, duration: 2.5, ease: 'power4.out', onComplete: () => { dragRef.current.rotY = 0; dragRef.current.rotX = 5 } }, "-=0.4")
+    
+    // Step 2: Open Lid
+    tl.to(macLidRef.current, { rotationX: 0, duration: 1.5, ease: 'power3.inOut' }, "-=0.2")
+    
+    // Step 3: Animate Loading Bar from 0 to 100%
+    tl.to('#boot-loader', { width: '100%', duration: 1.2, ease: 'power2.inOut' })
+    
+    // Step 4: Show site and reveal text data
+    tl.add(() => { setShowIframe(true) })
+    tl.fromTo('.modal-data-reveal', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' }, "+=0.2")
+  }
+}, [modalMounted])
+const closeProject = useCallback(() => {
+  // 1. Immediately hide the iframe visually, but do NOT unmount it yet
+  setShowIframe(false) 
+  
+  const tl = gsap.timeline({
+    onComplete: () => {
+      setActiveProject(null) // Unmount everything only AFTER animations finish
+      setModalMounted(false)
+      document.body.style.overflow = ''
+      if (window.lenis) window.lenis.start() 
+    }
+  })
+  
+  tl.to('.modal-data-reveal', { y: 20, opacity: 0, duration: 0.4, stagger: 0.05, ease: 'power2.in' })
+  tl.to(macLidRef.current, { rotationX: -90, duration: 0.8, ease: 'power3.inOut' }, "-=0.2")
+  tl.to(macAssemblyRef.current, { z: -4000, rotationY: 720, scale: 0.1, opacity: 0, duration: 1.5, ease: 'expo.inOut' }, "-=0.4")
+  tl.to(modalRef.current, { opacity: 0, backdropFilter: 'blur(0px)', pointerEvents: 'none', duration: 0.6 }, "-=0.8")
+}, [])
+
+// handlePointerDown goes right below here...
+  // ==========================================
+  // ADD THE NEW DRAG HANDLERS EXACTLY HERE
+  // ==========================================
+  const handlePointerDown = (e) => {
+    if (e.target.closest('.mac-screen-face') || e.target.closest('button')) return
+    dragRef.current.isDragging = true
+    dragRef.current.startX = e.clientX
+    dragRef.current.startY = e.clientY
+  }
+
+  const handlePointerMove = (e) => {
+    if (!dragRef.current.isDragging || !macAssemblyRef.current) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+    dragRef.current.startX = e.clientX
+    dragRef.current.startY = e.clientY
+
+    dragRef.current.rotY += dx * 0.4
+    dragRef.current.rotX -= dy * 0.4
+    dragRef.current.rotX = Math.max(-20, Math.min(45, dragRef.current.rotX))
+
+    gsap.to(macAssemblyRef.current, {
+      rotationY: dragRef.current.rotY,
+      rotationX: dragRef.current.rotX,
+      duration: 0.5,
+      ease: 'power2.out'
+    })
+
+    // FADE IN reset button if the laptop is moved away from default
+    if (!dragRef.current.hasMoved && (Math.abs(dragRef.current.rotY) > 3 || Math.abs(dragRef.current.rotX - 5) > 3)) {
+      dragRef.current.hasMoved = true
+      gsap.to(resetButtonRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.3 })
+    }
+  }
+
+  // ADD THIS FUNCTION below handlePointerUp
+  const resetLaptopPosition = () => {
+    dragRef.current.rotY = 0
+    dragRef.current.rotX = 5
+    dragRef.current.hasMoved = false
+    gsap.to(macAssemblyRef.current, { rotationY: 0, rotationX: 5, duration: 0.8, ease: 'power3.out' })
+    gsap.to(resetButtonRef.current, { opacity: 0, pointerEvents: 'none', duration: 0.3 })
+  }
+
+  const handlePointerUp = () => { 
+    dragRef.current.isDragging = false 
+  }
 
   useEffect(() => {
     if (modalMounted && macAssemblyRef.current && macLidRef.current) {
       const tl = gsap.timeline()
       gsap.set(macLidRef.current, { rotationX: -90 })
       tl.fromTo(modalRef.current, { opacity: 0, backdropFilter: 'blur(0px)' }, { opacity: 1, backdropFilter: 'blur(40px)', duration: 0.6, ease: 'power2.inOut' })
-      tl.fromTo(macAssemblyRef.current, { z: -5000, rotationY: -1080, rotationX: 15, rotationZ: -10, scale: 0.05, opacity: 0 }, { z: 0, rotationY: 0, rotationX: 5, rotationZ: 0, scale: 1, opacity: 1, duration: 2.5, ease: 'power4.out' }, "-=0.4")
+      tl.fromTo(macAssemblyRef.current, { z: -5000, rotationY: -1080, rotationX: 15, rotationZ: -10, scale: 0.05, opacity: 0 }, { z: 0, rotationY: 0, rotationX: 5, rotationZ: 0, scale: 1, opacity: 1, duration: 2.5, ease: 'power4.out', 
+        onComplete: () => {
+          dragRef.current.rotY = 0
+          dragRef.current.rotX = 5
+        }
+      }, "-=0.4")
       tl.to(macLidRef.current, { rotationX: 0, duration: 1.5, ease: 'power3.inOut' }, "-=0.2")
       tl.fromTo('.modal-data-reveal', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', onComplete: () => { setIsBooting(false); setShowIframe(true) } }, "-=0.5")
     }
@@ -402,7 +479,7 @@ export default function Home() {
             download="Yash_Bhardwaj_Resume.pdf" 
             className="magnetic font-mono text-[10px] tracking-[0.2em] text-cyan-400 uppercase border border-cyan-400/50 px-5 py-2.5 hover:bg-cyan-400 hover:text-black transition-all duration-300 rounded-sm cursor-none shadow-[0_0_15px_rgba(34,211,238,0.2)]"
           >
-            Download_Resume.pdf
+            Resume
           </a>
         </div>
       </header>
@@ -413,21 +490,40 @@ export default function Home() {
         className={`fixed inset-0 z-[100] glass-modal flex flex-col items-center opacity-0 ${modalMounted ? 'pointer-events-auto' : 'pointer-events-none'}`}
       >
         {activeProject && (
-          <button 
-            onClick={closeProject} 
-            className="absolute top-6 right-6 md:top-10 md:right-10 z-[110] w-14 h-14 rounded-full border border-cyan-400/50 bg-[#010103]/90 backdrop-blur-md flex items-center justify-center magnetic hover:bg-cyan-400 hover:text-black transition-colors cursor-none shadow-[0_0_20px_rgba(34,211,238,0.3)] pointer-events-auto" 
-            onMouseMove={(e) => handleMagnetic(e, e.currentTarget)} 
-            onMouseLeave={(e) => resetMagnetic(e.currentTarget)}
-          >
-            <span className="font-mono text-xl pointer-events-none">✕</span>
-          </button>
+         <>
+         <button 
+           onClick={closeProject} 
+           className="absolute top-6 right-6 md:top-10 md:right-10 z-[110] w-14 h-14 rounded-full border border-cyan-400/50 bg-[#010103]/90 backdrop-blur-md flex items-center justify-center magnetic hover:bg-cyan-400 hover:text-black transition-colors cursor-none shadow-[0_0_20px_rgba(34,211,238,0.3)] pointer-events-auto" 
+         >
+           <span className="font-mono text-xl pointer-events-none">✕</span>
+         </button>
+
+         {/* ADD THIS NEW BUTTON */}
+         <button 
+           ref={resetButtonRef}
+           onClick={resetLaptopPosition} 
+           className="absolute top-6 left-6 md:top-10 md:left-10 z-[110] px-5 py-3 rounded-full border border-cyan-400/50 bg-[#010103]/90 backdrop-blur-md flex items-center justify-center hover:bg-cyan-400 hover:text-black transition-colors cursor-none shadow-[0_0_20px_rgba(34,211,238,0.3)] opacity-0 pointer-events-none" 
+         >
+           <span className="font-mono text-xs uppercase pointer-events-none tracking-widest text-cyan-400">Reset View</span>
+         </button>
+       </>
         )}
 
-        <div ref={modalScrollAreaRef} className="w-full h-full overflow-y-auto overflow-x-hidden px-4 py-24 md:py-16 flex flex-col items-center">
+<div 
+  ref={modalScrollAreaRef} 
+  data-lenis-prevent="true" 
+  className="w-full h-full overflow-y-auto overflow-x-hidden px-4 py-24 md:py-16 flex flex-col items-center"
+>
           {activeProject && (
             <div className="w-full max-w-[1000px] flex flex-col items-center mt-10 md:mt-24 pb-32">
               
-              <div className="mac-scene pointer-events-none">
+              <div 
+  className="mac-scene cursor-grab active:cursor-grabbing pointer-events-auto"
+  onPointerDown={handlePointerDown}
+  onPointerMove={handlePointerMove}
+  onPointerUp={handlePointerUp}
+  onPointerLeave={handlePointerUp}
+>
                 <div ref={macAssemblyRef} className="mac-assembly">
                   <div className="mac-base">
                     <div className="mac-keyboard" />
@@ -441,21 +537,58 @@ export default function Home() {
                       </svg>
                     </div>
                     <div className="mac-screen-face pointer-events-auto">
+                      {/* Top Camera Notch */}
                       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#000] border-x border-b border-[#1a1a1a] rounded-b-xl z-30 flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-[#111] border border-white/10 flex items-center justify-center">
                           <div className="w-[2px] h-[2px] rounded-full bg-blue-500/80 shadow-[0_0_5px_#3b82f6]" />
                         </div>
                       </div>
-                      {!showIframe && (
-                        <div className="absolute inset-0 bg-[#050505] z-20 flex flex-col items-center justify-center">
-                          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-white transition-all duration-1000 ease-out" style={{ width: isBooting ? '100%' : '0%' }} />
-                          </div>
+                      
+                      {/* Boot Screen Layer */}
+                      <div className={`absolute inset-0 bg-[#050505] z-20 flex flex-col items-center justify-center transition-opacity duration-500 ${showIframe ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                        <svg className="w-16 h-16 text-white mb-10" viewBox="0 0 384 512" fill="currentColor">
+                          <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                        </svg>
+                        <div className="w-48 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                          <div id="boot-loader" className="h-full bg-white w-0" />
                         </div>
-                      )}
-                      {showIframe && (
-                        <iframe src={activeProject.link} className="w-full h-full relative z-10" frameBorder="0" allowFullScreen sandbox="allow-scripts allow-same-origin" />
-                      )}
+                      </div>
+
+                      {/* Live Iframe & GitHub Fallback Layer */}
+                      <div className={`absolute inset-0 z-10 bg-white transition-opacity duration-500 ${showIframe ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                        {activeProject && activeProject.link.includes('github.com') ? (
+                          
+                          /* --- GITHUB HYBRID UI --- */
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d1117] text-white p-6 text-center">
+                            <svg className="w-16 h-16 mb-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                            </svg>
+                            <h2 className="text-xl font-bold font-display mb-2">{activeProject.title}</h2>
+                            <p className="text-xs text-gray-400 font-mono mb-8 px-4 leading-loose">
+                              GitHub actively blocks UI embedding to protect against clickjacking.<br/>
+                              Access the source code securely below.
+                            </p>
+                            <a href={activeProject.link} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#238636] hover:bg-[#2ea043] rounded-md text-sm font-bold transition-colors shadow-lg cursor-none magnetic">
+                              View Repository ↗
+                            </a>
+                          </div>
+
+                        ) : (
+
+                          /* --- STANDARD LIVE IFRAME --- */
+                          <iframe 
+                            key={activeProject.id}
+                            // Detects Streamlit links and appends the required embed parameter dynamically
+                            src={activeProject.link.includes('streamlit.app') ? activeProject.link.replace(/\/$/, '') + '/?embed=true' : activeProject.link} 
+                            className="w-full h-full bg-white" 
+                            frameBorder="0" 
+                            allowFullScreen 
+                            // Expanded sandbox permissions required by complex web apps like Streamlit
+                            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads" 
+                          />
+
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -500,16 +633,20 @@ export default function Home() {
       </div>
 
       {/* z-[5] so the 3D scene objects (Moon/ISS) orbit OVER the hero text */}
-      <div className="relative z-[5] w-full pointer-events-none">
+      <div className="w-full pointer-events-none">
         
         {/* HERO SECTION */}
-        <section className="h-screen w-full flex flex-col justify-center items-center relative px-4 sm:px-6 overflow-hidden">
+        <section className="relative z-[5] h-screen w-full flex flex-col justify-center items-center px-4 sm:px-6 overflow-hidden">
           <div className="text-center relative">
-            <h1 className="font-display font-black text-[14vw] sm:text-[12vw] md:text-[9vw] leading-[0.9] tracking-tighter uppercase text-white drop-shadow-2xl">
-              {'YASH'.split('').map((c, i) => (<span key={`y-${i}`} className="hero-char inline-block">{c}</span>))}
-              <span className="hero-char inline-block">&nbsp;</span>
-              {'BHARDWAJ'.split('').map((c, i) => (<span key={`b-${i}`} className="hero-char inline-block">{c}</span>))}
-            </h1>
+          <h1 className="font-display font-black text-[15vw] sm:text-[12vw] md:text-[9vw] leading-[0.9] tracking-tighter uppercase text-white drop-shadow-2xl flex flex-col sm:flex-row items-center justify-center">
+  <div className="flex">
+    {'YASH'.split('').map((c, i) => (<span key={`y-${i}`} className="hero-char inline-block">{c}</span>))}
+  </div>
+  <span className="hero-char hidden sm:inline-block w-4 md:w-8">&nbsp;</span>
+  <div className="flex">
+    {'BHARDWAJ'.split('').map((c, i) => (<span key={`b-${i}`} className="hero-char inline-block">{c}</span>))}
+  </div>
+</h1>
             <div className="flex items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-6 w-full">
               <div className="hud-line h-px w-12 sm:w-24 bg-white/40 transform origin-right" />
               <p className="hero-data font-mono text-[10px] sm:text-xs md:text-sm tracking-[0.3em] sm:tracking-[0.5em] text-white uppercase whitespace-nowrap drop-shadow-md">Full-Stack AI Engineer</p>

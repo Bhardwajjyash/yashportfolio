@@ -12,10 +12,13 @@ if (typeof window !== 'undefined') {
 export default function SmoothScroll({ children }) {
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.5, // slightly slower for heavier cinematic feel
+      duration: 1.5, 
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     })
+
+    // ADD THIS LINE: Exposes the engine globally
+    window.lenis = lenis 
 
     lenis.on('scroll', ScrollTrigger.update)
 
@@ -26,6 +29,8 @@ export default function SmoothScroll({ children }) {
     gsap.ticker.lagSmoothing(0)
 
     return () => {
+      // ADD THIS LINE: Clean up on unmount
+      window.lenis = null 
       lenis.destroy()
       gsap.ticker.remove((time) => {
         lenis.raf(time * 1000)
