@@ -12,10 +12,10 @@ export default function CustomCursor() {
     const dot = dotRef.current
     if (!ring || !dot) return
 
-    const ringX = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3" })
-    const ringY = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3" })
-    const dotX = gsap.quickTo(dot, "x", { duration: 0.08, ease: "none" })
-    const dotY = gsap.quickTo(dot, "y", { duration: 0.08, ease: "none" })
+    const ringX = gsap.quickTo(ring, "x", { duration: 0.3, ease: "power3" })
+    const ringY = gsap.quickTo(ring, "y", { duration: 0.3, ease: "power3" })
+    const dotX = gsap.quickTo(dot, "x", { duration: 0.05, ease: "none" })
+    const dotY = gsap.quickTo(dot, "y", { duration: 0.05, ease: "none" })
 
     const onMouseMove = (e) => {
       ringX(e.clientX)
@@ -25,17 +25,17 @@ export default function CustomCursor() {
     }
 
     const onHoverEnter = () => {
-      gsap.to(ring, { scale: 2.5, borderColor: 'rgba(0, 240, 255, 0.8)', boxShadow: '0 0 20px rgba(0, 240, 255, 0.6)', duration: 0.3, ease: "power2.out" })
-      gsap.to(dot, { scale: 0, duration: 0.3 })
+      gsap.to(ring, { scale: 1.5, rotate: 45, borderRadius: '0%', borderColor: '#00f0ff', borderWidth: '1px', boxShadow: '0 0 15px rgba(0,240,255,0.5)', duration: 0.3, ease: "back.out(1.7)" })
+      gsap.to(dot, { scale: 3, backgroundColor: 'transparent', border: '1px solid #ffffff', duration: 0.3 })
     }
 
     const onHoverLeave = () => {
-      gsap.to(ring, { scale: 1, borderColor: 'rgba(0, 240, 255, 0.3)', boxShadow: '0 0 6px rgba(0, 240, 255, 0.15)', duration: 0.3, ease: "power2.out" })
-      gsap.to(dot, { scale: 1, duration: 0.3 })
+      gsap.to(ring, { scale: 1, rotate: 0, borderRadius: '50%', borderColor: 'rgba(0, 240, 255, 0.4)', borderWidth: '1px', boxShadow: '0 0 0px transparent', duration: 0.3, ease: "power2.out" })
+      gsap.to(dot, { scale: 1, backgroundColor: '#00f0ff', border: 'none', duration: 0.3 })
     }
 
     window.addEventListener('mousemove', onMouseMove)
-    const interactives = document.querySelectorAll('a, button, [role="button"], .magnetic')
+    const interactives = document.querySelectorAll('a, button, [role="button"], .magnetic, .skill-chip')
     interactives.forEach(el => {
       el.addEventListener('mouseenter', onHoverEnter)
       el.addEventListener('mouseleave', onHoverLeave)
@@ -52,8 +52,11 @@ export default function CustomCursor() {
 
   return (
     <>
-      <div ref={ringRef} className="fixed top-0 left-0 w-10 h-10 rounded-full pointer-events-none z-[100] -translate-x-1/2 -translate-y-1/2 mix-blend-screen hidden md:block" style={{ border: '1px solid rgba(0, 240, 255, 0.3)', boxShadow: '0 0 6px rgba(0, 240, 255, 0.15)' }} />
-      <div ref={dotRef} className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[100] -translate-x-1/2 -translate-y-1/2 mix-blend-screen hidden md:block" style={{ backgroundColor: '#00f0ff', boxShadow: '0 0 8px #00f0ff, 0 0 16px rgba(0, 240, 255, 0.4)' }} />
+      <div ref={ringRef} className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 mix-blend-screen hidden md:flex justify-center items-center" style={{ border: '1px solid rgba(0, 240, 255, 0.4)' }}>
+        <div className="absolute w-full h-[1px] bg-cyan/30" />
+        <div className="absolute h-full w-[1px] bg-cyan/30" />
+      </div>
+      <div ref={dotRef} className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 hidden md:block" style={{ backgroundColor: '#00f0ff', boxShadow: '0 0 10px #00f0ff' }} />
     </>
   )
 }

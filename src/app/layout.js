@@ -5,7 +5,7 @@ import './globals.css'
 const orbitron = Orbitron({
   subsets: ['latin'],
   variable: '--font-orbitron',
-  weight: ['400', '700', '900'],
+  weight: ['400', '500', '700', '900'],
 })
 
 const jetbrains = JetBrains_Mono({
@@ -19,8 +19,8 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'Yash Bhardwaj | System Interface',
-  description: 'Interactive Holographic Developer Portfolio.',
+  title: 'YASH BHARDWAJ | OS',
+  description: 'Advanced Holographic System Interface.',
 }
 
 export default function RootLayout({ children }) {
