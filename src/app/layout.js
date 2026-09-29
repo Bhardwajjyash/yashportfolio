@@ -19,7 +19,7 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'YASH BHARDWAJ | OS',
+  title: 'YASH BHARDWAJ ',
   description: 'Advanced Holographic System Interface.',
 }
 
