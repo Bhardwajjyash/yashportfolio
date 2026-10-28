@@ -65,7 +65,7 @@ const PROJECTS_DATA = [
     subtitle: 'SYS.ARCHITECTURE', 
     description: 'Student Achievement Management System engineered for the Bhagwan Parshuram Institute of Technology. A structural digitization of academic tracking with secure navigation layouts.', 
     tech: ['Next.js', 'MySQL', 'Prisma ORM', 'cloudinary'], 
-    link: 'https://github.com/bhardwajjyash',
+    link: 'https://bpit-portal.vercel.app/',
     metrics: { client: 'BPIT Dept', auth: 'Role-Based', type: 'Full-Stack' }
   },
 
